@@ -186,7 +186,7 @@ void TancarSerie(fd)
 int main(int argc, char *argv[]) {                                                              
    
     //Declaració variables funció main                                                                   
-	int i=0, fd, res=0,m=1, lectures=0, pos=0;                                                     
+	int i=0, fd, res=0,m=1, lectures=0, pos=0, excestemp=0;                                                     
 	float array[3600];
 	float graus=0, maxim=0, minim=99;
 	int comp=0;
@@ -279,6 +279,27 @@ if (strncmp(buf,"AM0Z",4)==0)
 			}
 			array[pos]=graus; //es guarda la temperatura a l'arrray circular 3600
 			
+		//Comprovació per encendre o apagar el ventilador
+		if (graus >= temperatura)
+		{
+			sprintf(missatge,"AS051Z");
+			enviar(missatge,res,fd);
+			memset(buf,'\0',256);
+			rebre(buf, fd, 60);
+			memset(buf,'\0',256);
+			excestemp=1; //protecció per a que no entri continuament al següent if
+		}
+		
+		if (graus < temperatura && excestemp==1)
+		{
+			sprintf(missatge,"AS050Z");
+			enviar(missatge,res,fd);
+			memset(buf,'\0',256);
+			rebre(buf, fd, 60);
+			memset(buf,'\0',256);
+			excestemp=0;
+		}
+		
 		//comparem les adqusicions per guardar els màxims i mínims de temperatura
 		if (maxim < graus)
 			{
@@ -293,7 +314,6 @@ if (strncmp(buf,"AM0Z",4)==0)
 
 			sleep(1);
 			comp++; //s'incrementa la varibale comp cada segon(sleeep(1))->comptador
-			printf("%i\n",comp);
 			
 	} while (m==1);
 	
