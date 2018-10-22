@@ -23,7 +23,7 @@
 #define _POSIX_SOURCE 1 /* POSIX compliant source */                       
                                                            
 struct termios oldtio,newtio;                                            
-
+int rc;
 //configuració de la comunicació sèrie
 static int callback(void *NotUsed, int argc, char **argv, char 
 **azColName){
@@ -38,21 +38,18 @@ int i;
 return 0;
 }
 
-int sqlite(int argc, char **argv){
+int sqlite(char *ordre){
 sqlite3 *db;
 char *zErrMsg = 0;
 int rc;
-	if( argc!=3 ){
-		fprintf(stderr, "Usage: %s DATABASE SQL-STATEMENT\n", argv[0]);
-		return(1);
-	}
-	rc = sqlite3_open(argv[1], &db);
+	
+	rc = sqlite3_open("basedades.db", &db);
 	if( rc ){
 		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
 		sqlite3_close(db);
 		return(1);
 	}
-	rc = sqlite3_exec(db, argv[2], callback, 0, &zErrMsg);
+	rc = sqlite3_exec(db, ordre, callback, 0, &zErrMsg);
 
 	if( rc!=SQLITE_OK ){
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -177,7 +174,7 @@ void rebreled (char *buf, int fd, int temps)
 }
 
 //Funció per tancar la comunicació sèrie
-void TancarSerie(fd)
+void TancarSerie(int fd)
 {
 	tcsetattr(fd,TCSANOW,&oldtio);
 	close(fd);
@@ -186,17 +183,20 @@ void TancarSerie(fd)
 int main(int argc, char *argv[]) {                                                              
    
     //Declaració variables funció main                                                                   
-	int i=0, fd, res=0,m=1, lectures=0, pos=0, excestemp=0;                                                     
+	int i=0, fd, res=0,m=1, lectures=0, pos=0, excestemp=0, up=0;                                                     
 	float array[3600];
 	float graus=0, maxim=0, minim=99;
 	int comp=0;
 	char buf[255];
 	char missatge[255];
+	char ordre[100];
 	int comparacio=0;
 	int opt= 0;
     int temperatura = -1;
 	memset(buf,'\0',256);
 	fd = ConfigurarSerie();
+	sprintf(ordre,"CREATE TABLE taula ( data DATETIME, temperatura FLOAT, estat INT)");
+	sqlite(ordre);
 	
 	// Enviar el missatge 1, possada en marxa
     
@@ -206,12 +206,13 @@ int main(int argc, char *argv[]) {
     };
 
     int long_index =0;
+  
     while ((opt = getopt_long(argc, argv,"apl:t:", 
                    long_options, &long_index )) != -1) {
-       
         switch (opt) {
              case 't' : temperatura = atoi(optarg);
              printf("La temperatura és:%i\n",temperatura);
+         
                  break;
              default: printf("Si us palu, introdueix el paràmetre -t o -temperatura seguit de la temperatura màxima");
                  exit(EXIT_FAILURE);
@@ -222,7 +223,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-	sprintf(missatge,"AM1601Z");
+	sprintf(missatge,"AM1101Z");
 
 	printf("%s\n",missatge);//es verfifica pel terminal el missatge enviat
 	enviar(missatge, res, fd);
@@ -250,16 +251,18 @@ if (strncmp(buf,"AM0Z",4)==0)
 		memset(buf,'\0',256);//es neteja el buf per poder llegir els valors correctament
 		
 		//cada vegada que comp sigui igual al temps establert per la consola es farà la comunicació de missatges
-		if (comp==comparacio+60)
+		if (comp==comparacio+10)
 		{
 			//S'envien i es reben els diferetns missatges amb l'arduino
+			sprintf(ordre,"INSERT INTO taula ('18/10/2018 18:20:02', %f, %i)",graus,up);
+			sqlite(ordre);
 			sprintf(missatge,"AS131Z");//encdre led13
 			enviarled(missatge,res,fd);
-			rebreled(buf, fd,60);
+			rebreled(buf, fd,10);
 			sprintf(missatge,"ACZ");//confimació ok
 			enviar(missatge,res,fd);
 			memset(buf,'\0',256);
-			rebre(buf, fd, 60);
+			rebre(buf, fd, 10);
 			printf("%s\n",buf);//comprobació del missatge rebut
 			comparacio=comp;
 			graus=((buf[5]-'0')*10+(buf[6]-'0')+(buf[7]-'0')*0.1+(buf[8 	]-'0')*0.01);//es tradueixen els graus del missatge (string) a float
@@ -267,8 +270,9 @@ if (strncmp(buf,"AM0Z",4)==0)
 			memset(buf,'\0',256);
 			sprintf(missatge,"AS130Z");//apagar led 13
 			enviarled(missatge, res, fd);
-			rebreled(buf, fd, 60);
+			rebreled(buf, fd, 10);			
 			lectures++; //variable per saber el nombre de lectures fetes
+			printf("%i\n",lectures);
 			pos++; //posició de l'array circular
 		}
 			//si la posició de l'array circular arriba a 3600, es torna a 0
@@ -280,16 +284,18 @@ if (strncmp(buf,"AM0Z",4)==0)
 			array[pos]=graus; //es guarda la temperatura a l'arrray circular 3600
 			
 		//Comprovació per encendre o apagar el ventilador
-		if (graus >= temperatura)
-		{
-			sprintf(missatge,"AS051Z");
-			enviar(missatge,res,fd);
-			memset(buf,'\0',256);
-			rebre(buf, fd, 60);
-			memset(buf,'\0',256);
-			excestemp=1; //protecció per a que no entri continuament al següent if
-		}
-		
+	if (up==0){
+			if (graus >= temperatura)
+			{
+				sprintf(missatge,"AS051Z");
+				enviar(missatge,res,fd);
+				memset(buf,'\0',256);
+				rebre(buf, fd, 60);
+				memset(buf,'\0',256);
+				excestemp=1; //protecció per a que no entri continuament al següent if
+				up=1;//variable per no tornar a entrar
+			}
+		}	
 		if (graus < temperatura && excestemp==1)
 		{
 			sprintf(missatge,"AS050Z");
@@ -298,8 +304,9 @@ if (strncmp(buf,"AM0Z",4)==0)
 			rebre(buf, fd, 60);
 			memset(buf,'\0',256);
 			excestemp=0;
+			up=0;
 		}
-		
+
 		//comparem les adqusicions per guardar els màxims i mínims de temperatura
 		if (maxim < graus)
 			{
