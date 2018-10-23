@@ -214,7 +214,7 @@ int main(int argc, char *argv[]) {
              printf("La temperatura és:%i\n",temperatura);
          
                  break;
-             default: printf("Si us palu, introdueix el paràmetre -t o -temperatura seguit de la temperatura màxima");
+             default: printf("Si us palu, introdueix el paràmetre -t o -temperatura seguit de la temperatura màxima\n");
                  exit(EXIT_FAILURE);
         }
     }
@@ -254,7 +254,7 @@ if (strncmp(buf,"AM0Z",4)==0)
 		if (comp==comparacio+10)
 		{
 			//S'envien i es reben els diferetns missatges amb l'arduino
-			sprintf(ordre,"INSERT INTO taula ('18/10/2018 18:20:02', %f, %i)",graus,up);
+			sprintf(ordre,"INSERT INTO taula VALUES ('18/10/2018 18:20:02', %f, %i)",graus,up);
 			sqlite(ordre);
 			sprintf(missatge,"AS131Z");//encdre led13
 			enviarled(missatge,res,fd);
