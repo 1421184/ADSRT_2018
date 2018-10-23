@@ -193,11 +193,13 @@ int main(int argc, char *argv[]) {
 	int comparacio=0;
 	int opt= 0;
     int temperatura = -1;
+    int alarma=0;
 	memset(buf,'\0',256);
 	fd = ConfigurarSerie();
 	sprintf(ordre,"CREATE TABLE taula ( data DATETIME, temperatura FLOAT, estat INT)");
 	sqlite(ordre);
-	
+	sprintf(ordre,"CREATE TABLE alarmes ( data DATETIME, temps float)");
+	sqlite(ordre);
 	// Enviar el missatge 1, possada en marxa
     
     static struct option long_options[] = {
@@ -284,18 +286,29 @@ if (strncmp(buf,"AM0Z",4)==0)
 			array[pos]=graus; //es guarda la temperatura a l'arrray circular 3600
 			
 		//Comprovació per encendre o apagar el ventilador
+	
+	if (alarma==0 && up==1)
+	{
+		alarma=comparacio+300;
+	}
+	if (alarma==comp){
+	sprintf(ordre,"INSERT INTO alarmes VALUES ('18/10/2018 18:20:02', %i)",comp);
+	sqlite(ordre);
+	alarma = 0;
+	}
 	if (up==0){
-			if (graus >= temperatura)
-			{
-				sprintf(missatge,"AS051Z");
-				enviar(missatge,res,fd);
-				memset(buf,'\0',256);
-				rebre(buf, fd, 60);
-				memset(buf,'\0',256);
-				excestemp=1; //protecció per a que no entri continuament al següent if
-				up=1;//variable per no tornar a entrar
-			}
-		}	
+		if (graus >= temperatura)
+		{
+			sprintf(missatge,"AS051Z");
+			enviar(missatge,res,fd);
+			memset(buf,'\0',256);
+			rebre(buf, fd, 60);
+			memset(buf,'\0',256);
+			excestemp=1; //protecció per a que no entri continuament al següent if
+			up=1;//variable per no tornar a entrar
+		}
+	}	
+	
 		if (graus < temperatura && excestemp==1)
 		{
 			sprintf(missatge,"AS050Z");
