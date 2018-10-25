@@ -23,6 +23,8 @@
 #define _POSIX_SOURCE 1 /* POSIX compliant source */                       
                                                            
 struct termios oldtio,newtio;                                            
+sqlite3 *db;
+char *zErrMsg = 0;
 int rc;
 //configuració de la comunicació sèrie
 static int callback(void *NotUsed, int argc, char **argv, char 
@@ -39,23 +41,14 @@ return 0;
 }
 
 int sqlite(char *ordre){
-sqlite3 *db;
-char *zErrMsg = 0;
-int rc;
-	
-	rc = sqlite3_open("basedades.db", &db);
-	if( rc ){
-		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
-		sqlite3_close(db);
-		return(1);
-	}
+
 	rc = sqlite3_exec(db, ordre, callback, 0, &zErrMsg);
 
 	if( rc!=SQLITE_OK ){
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
-	sqlite3_close(db);
+
 return 0;
 }
 
@@ -183,43 +176,60 @@ void TancarSerie(int fd)
 int main(int argc, char *argv[]) {                                                              
    
     //Declaració variables funció main                                                                   
-	int i=0, fd, res=0,m=1, lectures=0, pos=0, excestemp=0, up=0;                                                     
+	int i=0, fd, res=0,m=1, lectures=0, pos=0, excestemp=0, up=0, punt=0;                                                     
 	float array[3600];
 	float graus=0, maxim=0, minim=99;
 	int comp=0;
 	char buf[255];
 	char missatge[255];
 	char ordre[100];
+	char basedades;
 	int comparacio=0;
 	int opt= 0;
     int temperatura = -1;
     int alarma=0;
 	memset(buf,'\0',256);
 	fd = ConfigurarSerie();
-	sprintf(ordre,"CREATE TABLE taula ( data DATETIME, temperatura FLOAT, estat INT)");
-	sqlite(ordre);
-	sprintf(ordre,"CREATE TABLE alarmes ( data DATETIME, temps float)");
-	sqlite(ordre);
+	
 	// Enviar el missatge 1, possada en marxa
     
     static struct option long_options[] = {
         {"temperatura",   required_argument, 0,  't' },
+        {"basedades",   required_argument, 0,  'd' },
         {0,           0,                 0,  0   }
     };
 
     int long_index =0;
-  
-    while ((opt = getopt_long(argc, argv,"apl:t:", 
+
+    while ((opt = getopt_long(argc, argv,"apl:t:d:", 
                    long_options, &long_index )) != -1) {
         switch (opt) {
              case 't' : temperatura = atoi(optarg);
-             printf("La temperatura és:%i\n",temperatura);
+             printf("La temperatura és: %i\n",temperatura);
+             case 'd' : 
+             do
+			 {
+			   basedades=optarg[punt];
+			   punt++;
+			 } while (optarg[punt]=='\0');
+			 
+             basedades = *optarg;
+             printf("El nom de la base de dades és: %c\n", basedades);
          
                  break;
-             default: printf("Si us palu, introdueix el paràmetre -t o -temperatura seguit de la temperatura màxima\n");
+             default: printf("Si us palu, introdueix el paràmetre -t i -d per indicar la temperatura i la base de dades\n");
                  exit(EXIT_FAILURE);
         }
     }
+    rc = sqlite3_open("basedades.db", &db);
+	if( rc ){
+		fprintf(stderr, "No s'ha pogut obrir la base de dades: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
+	}
+	sprintf(ordre,"CREATE TABLE taula ( data DATETIME, temperatura FLOAT, estat INT)");
+	sqlite(ordre);
+	sprintf(ordre,"CREATE TABLE alarmes ( data DATETIME, temps float)");
+	sqlite(ordre);
     if (temperatura == -1) {
        printf("Si us palu, introdueix el paràmetre -t o -temperatura seguit de la temperatura màxima");
         exit(EXIT_FAILURE);
@@ -340,6 +350,6 @@ if (strncmp(buf,"AM0Z",4)==0)
 }		 
 	//cridem a la funció per tancar la comunicació sèrie                                                         
 	TancarSerie(fd);
-	
+	sqlite3_close(db);
 	return 0;
 }
