@@ -176,14 +176,14 @@ void TancarSerie(int fd)
 int main(int argc, char *argv[]) {                                                              
    
     //Declaració variables funció main                                                                   
-	int i=0, fd, res=0,m=1, lectures=0, pos=0, excestemp=0, up=0, punt=0;                                                     
+	int i=0, fd, res=0,m=1, lectures=0, pos=0, excestemp=0, up=0;                                                     
 	float array[3600];
 	float graus=0, maxim=0, minim=99;
 	int comp=0;
 	char buf[255];
 	char missatge[255];
 	char ordre[100];
-	char basedades;
+	char *dades=NULL;
 	int comparacio=0;
 	int opt= 0;
     int temperatura = -1;
@@ -201,27 +201,21 @@ int main(int argc, char *argv[]) {
 
     int long_index =0;
 
-    while ((opt = getopt_long(argc, argv,"apl:t:d:", 
+    while ((opt = getopt_long(argc, argv,"t:d:", 
                    long_options, &long_index )) != -1) {
         switch (opt) {
              case 't' : temperatura = atoi(optarg);
              printf("La temperatura és: %i\n",temperatura);
-             case 'd' : 
-             do
-			 {
-			   basedades=optarg[punt];
-			   punt++;
-			 } while (optarg[punt]=='\0');
-			 
-             basedades = *optarg;
-             printf("El nom de la base de dades és: %c\n", basedades);
-         
-                 break;
-             default: printf("Si us palu, introdueix el paràmetre -t i -d per indicar la temperatura i la base de dades\n");
+      		 break;
+			 case 'd':
+			 dades=(optarg);
+			 printf ("La base de dades serà: %s\n", dades);
+			 break;
+          default: printf("Si us palu, introdueix el paràmetre -t i -d per indicar la temperatura i la base de dades\n");
                  exit(EXIT_FAILURE);
         }
     }
-    rc = sqlite3_open("basedades.db", &db);
+    rc = sqlite3_open(dades, &db);
 	if( rc ){
 		fprintf(stderr, "No s'ha pogut obrir la base de dades: %s\n", sqlite3_errmsg(db));
 		sqlite3_close(db);
