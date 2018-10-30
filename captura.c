@@ -183,16 +183,36 @@ int main(int argc, char *argv[]) {
 	char buf[255];
 	char missatge[255];
 	char ordre[100];
+	char hora[255];
 	char *dades=NULL;
 	int comparacio=0;
 	int opt= 0;
     int temperatura = -1;
     int alarma=0;
 	memset(buf,'\0',256);
-	fd = ConfigurarSerie();
-	
+	fd = ConfigurarSerie();	
+	time_t temps;
+
+        //Capturem el temps amb la funcio time(time_t *t);
+	temps = time(NULL);
+	// Defineix punter a una estructura tm
+    struct tm * p_data;
+
+	//Funcion localtime() per traduir segons UTC a la hora:minuts:segons de la hora local
+	//struct tm *localtime(const time_t *timep);
+    p_data = localtime(&temps);
 	// Enviar el missatge 1, possada en marxa
-    
+    struct tm {
+		int tm_sec;         /* seconds */
+		int tm_min;         /* minutes */
+		int tm_hour;        /* hours */
+		int tm_mday;        /* day of the month */
+		int tm_mon;         /* month */
+		int tm_year;        /* year */
+		int tm_wday;        /* day of the week */
+		int tm_yday;        /* day in the year */
+		int tm_isdst;       /* daylight saving time */
+};
     static struct option long_options[] = {
         {"temperatura",   required_argument, 0,  't' },
         {"basedades",   required_argument, 0,  'd' },
@@ -254,13 +274,14 @@ if (strncmp(buf,"AM0Z",4)==0)
 	//es realitza un do/while per fer un bucle que llegeixi dades constantment
 	do
 	{
+       sprintf(hora,"%.02i/%.02i/%i %.02i:%.02i:%.02i",p_data->tm_mday,p_data->tm_mon,1900+p_data->tm_year, p_data->tm_hour, p_data->tm_min, p_data->tm_sec);
 		memset(buf,'\0',256);//es neteja el buf per poder llegir els valors correctament
 		
 		//cada vegada que comp sigui igual al temps establert per la consola es farà la comunicació de missatges
 		if (comp==comparacio+10)
 		{
 			//S'envien i es reben els diferetns missatges amb l'arduino
-			sprintf(ordre,"INSERT INTO taula VALUES ('18/10/2018 18:20:02', %f, %i)",graus,up);
+			sprintf(ordre,"INSERT INTO taula VALUES ('%s', %f, %i)",hora,graus,up);
 			sqlite(ordre);
 			sprintf(missatge,"AS131Z");//encdre led13
 			enviarled(missatge,res,fd);
@@ -288,6 +309,8 @@ if (strncmp(buf,"AM0Z",4)==0)
 			pos=0;	
 			}
 			array[pos]=graus; //es guarda la temperatura a l'arrray circular 3600
+		
+	
 			
 		//Comprovació per encendre o apagar el ventilador
 	
@@ -296,7 +319,7 @@ if (strncmp(buf,"AM0Z",4)==0)
 		alarma=comparacio+300;
 	}
 	if (alarma==comp){
-	sprintf(ordre,"INSERT INTO alarmes VALUES ('18/10/2018 18:20:02', %i)",comp);
+	sprintf(ordre,"INSERT INTO alarmes VALUES ('%s', %i)",hora,comp);
 	sqlite(ordre);
 	alarma = 0;
 	}
