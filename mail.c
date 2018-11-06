@@ -56,12 +56,10 @@ int main(int argc, char *argv[]){
 	int			sFd;
 	int 		result;
 	char		buffer[256];
-	char		missatge0[] = "HELO AE2004\n";
-	char		missatge1[] = "MAIL FROM: 1457636@campus.euss.org\n";
-	char		missatge2[] = "RCPT TO: 1422047@campus.euss.org\n";
-	char		missatge3[] = "DATA\n";
-	char		missatge4[] = "Subject: mail d'exemple\nFrom: 1457636@campus.euss.org\nTo: 1422047@campus.euss.org\nHola Salva\n\n Això es un mail de prova\n\n";
-	char 		missatge[1024];
+	char		desti;
+	char		asumpte;
+	char		missatge2[] = "RCPT TO: ";
+	char		missatge4[1024];
         //Definim una variable de tipus time_t
 	time_t temps;
 
@@ -83,15 +81,6 @@ int tm_isdst;       /* daylight saving time */
 
 	// Defineix punter a una estructura tm
         struct tm * p_data;
-
-	//Funcion localtime() per traduir segons UTC a la hora:minuts:segons de la hora local
-	//struct tm *localtime(const time_t *timep);
-
-        //Es treu per pantalla el camp tm_sec de l'estructura temps, que són els segons de la hora actual
-      
-
-
-
 
 	/*Crear el socket*/
 	sFd=socket(AF_INET,SOCK_STREAM,0);
@@ -116,17 +105,32 @@ int tm_isdst;       /* daylight saving time */
 	result = read(sFd, buffer, 256);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
-		
+	
+	printf("Escriu la direcció de destí\n");	
+	
+	scanf("%c",&desti);
+	
+	strcat(missatge2, &desti);
+	printf("Escriu l'asumpte del correu\n");
+	scanf("%c",&asumpte);
+	sprintf(missatge4,"Subject: %c\nFrom: 1457636@campus.euss.org\nTo: %c\nHola Salva\n\n Això es un mail de prova\n\n",desti, asumpte);
+	
+void mail(char *missatge, int res, int fd){	
+	char		HELO[] = "HELO AE2004\n";
+	char		missatge1[] = "MAIL FROM: 1421184@campus.euss.org\n";
+	char		missatge3[] = "DATA\n";
+	
 	/*Enviar*/
-	strcpy(buffer,missatge0); //Copiar missatge a buffer
+	strcpy(buffer,HELO); //Copiar missatge a buffer
 	result = write(sFd, buffer, strlen(buffer));
-	printf("Missatge enviat a servidor(bytes %d): %s\n",	result, missatge0);
+	printf("Missatge enviat a servidor(bytes %d): %s\n", result, HELO);
 
 	/*Rebre*/
 	result = read(sFd, buffer, 256);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
-/*Enviar*/
+	
+	/*Enviar*/
 	strcpy(buffer,missatge1); //Copiar missatge a buffer
 	result = write(sFd, buffer, strlen(buffer));
 	buffer[result]=0;
@@ -136,7 +140,7 @@ int tm_isdst;       /* daylight saving time */
 	result = read(sFd, buffer, 256);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
-	/*Tancar el socket*/
+
 	/*Enviar*/
 	strcpy(buffer,missatge2); //Copiar missatge a buffer
 	result = write(sFd, buffer, strlen(buffer));
@@ -146,6 +150,7 @@ int tm_isdst;       /* daylight saving time */
 	result = read(sFd, buffer, 256);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
+	
 	/*Enviar*/
 	strcpy(buffer,missatge3); //Copiar missatge a buffer
 	result = write(sFd, buffer, strlen(buffer));
@@ -157,9 +162,7 @@ int tm_isdst;       /* daylight saving time */
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
 	
 	p_data = localtime( &temps );
-
-    //Es treu per pantalla el camp tm_sec de l'estructura temps, que són els segons de la hora actual
-        
+            
     sprintf(missatge,"\n\nL'hora actual és: %i:%.02i:%.02i\n\nAdéu\n.\n", p_data->tm_hour, p_data->tm_min, p_data->tm_sec);
 	printf("%s",missatge);
 	strcat(missatge4,missatge);
@@ -174,6 +177,6 @@ int tm_isdst;       /* daylight saving time */
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
 	
 	close(sFd);
-
+}
 	return 0;
 	}
