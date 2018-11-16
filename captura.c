@@ -256,7 +256,6 @@ int main(int argc, char *argv[]) {
 	
 	rebre(buf, fd, 60);
 	
-	//
 	for (i = 0; i < res; i++)
 	{
 		printf("%c",missatge[i]);

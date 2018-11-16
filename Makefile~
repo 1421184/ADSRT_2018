@@ -5,9 +5,9 @@ clean:
 github:
 	git clone https://github.com/1421184/ADSRT_2018
 executar:
-	./Fita3 -t 30
+	./captura -t 30
 compile:
-	gcc Fita3.c -lsqlite3 -o Fita3
+	gcc captura.c -lsqlite3 -o captura
 
 help:
 	@echo Opcions compilacio

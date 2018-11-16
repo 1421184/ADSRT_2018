@@ -1,7 +1,7 @@
 all: compile 
 
 clean:
-	rm Fita3
+	rm captura
 github:
 	git clone https://github.com/1421184/ADSRT_2018
 executar:
@@ -15,4 +15,5 @@ help:
 	@echo   make compile
 	@echo	make github
 	@echo   make executar, "paràmetre per defecte 30º"
+
 
