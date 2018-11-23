@@ -16,6 +16,12 @@
 #include <time.h> 
 #include <getopt.h> 
 #include <sqlite3.h> 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include "mail.h"
+
  
 #define BAUDRATE B9600                                                
 //#define MODEMDEVICE "/dev/ttyS0"        //Conexió IGEP - Arduino
@@ -184,7 +190,10 @@ int main(int argc, char *argv[]) {
 	char missatge[255];
 	char ordre[100];
 	char hora[255];
+	char *remitent=NULL;
+	char *desti=NULL;
 	char *dades=NULL;
+	char cos_email[1024];
 	int comparacio=0;
 	int opt= 0;
     int temperatura = -1;
@@ -215,23 +224,33 @@ int main(int argc, char *argv[]) {
 };
     static struct option long_options[] = {
         {"temperatura",   required_argument, 0,  't' },
-        {"basedades",   required_argument, 0,  'd' },
+        {"basedades",   required_argument, 0,  'c' },
+        {"remitent",   required_argument, 0,  'r' },
+        {"desti",   required_argument, 0,  'd' },
         {0,           0,                 0,  0   }
     };
 
     int long_index =0;
 
-    while ((opt = getopt_long(argc, argv,"t:d:", 
+    while ((opt = getopt_long(argc, argv,"t:r:c:d:", 
                    long_options, &long_index )) != -1) {
         switch (opt) {
              case 't' : temperatura = atoi(optarg);
              printf("La temperatura és: %i\n",temperatura);
       		 break;
-			 case 'd':
+			 case 'r':
+			 remitent=(optarg);
+			 printf ("El remitent serà: %s\n", remitent);
+			 break;
+			 case 'c':
 			 dades=(optarg);
 			 printf ("La base de dades serà: %s\n", dades);
 			 break;
-          default: printf("Si us palu, introdueix el paràmetre -t i -d per indicar la temperatura i la base de dades\n");
+			 case 'd':
+			 desti=(optarg);
+			 printf ("El destinatari serà: %s\n", desti);
+			 break;
+          default: printf("Si us plau, introdueix el paràmetre -t i -d per indicar la temperatura i la base de dades\n");
                  exit(EXIT_FAILURE);
         }
     }
@@ -291,7 +310,7 @@ if (strncmp(buf,"AM0Z",4)==0)
 			rebre(buf, fd, 10);
 			printf("%s\n",buf);//comprobació del missatge rebut
 			comparacio=comp;
-			graus=((buf[5]-'0')*10+(buf[6]-'0')+(buf[7]-'0')*0.1+(buf[8 	]-'0')*0.01);//es tradueixen els graus del missatge (string) a float
+			graus=((buf[5]-'0')*10+(buf[6]-'0')+(buf[7]-'0')*0.1+(buf[8]-'0')*0.01);//es tradueixen els graus del missatge (string) a float
 			printf("%.02f\n",graus);//temrpeatura amb deciamals per pantalla
 			memset(buf,'\0',256);
 			sprintf(missatge,"AS130Z");//apagar led 13
@@ -321,6 +340,9 @@ if (strncmp(buf,"AM0Z",4)==0)
 	sprintf(ordre,"INSERT INTO alarmes VALUES ('%s', %i)",hora,comp);
 	sqlite(ordre);
 	alarma = 0;
+	memset(cos_email,'\0',256);
+	sprintf(cos_email,"Subject: Alarma\nFrom: %s\nTo: %s\n\nNo és possible controlar la temperatura\n\n",remitent,desti);
+	enviar_mail(remitent,desti,cos_email);
 	}
 	if (up==0){
 		if (graus >= temperatura)
