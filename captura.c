@@ -311,7 +311,7 @@ if (strncmp(buf,"AM0Z",4)==0)
 			printf("%s\n",buf);//comprobació del missatge rebut
 			comparacio=comp;
 			graus=((buf[5]-'0')*10+(buf[6]-'0')+(buf[7]-'0')*0.1+(buf[8]-'0')*0.01);//es tradueixen els graus del missatge (string) a float
-			printf("%.02f\n",graus);//temrpeatura amb deciamals per pantalla
+			printf("%.02f\n",graus);//temperatura amb decimals per pantalla
 			memset(buf,'\0',256);
 			sprintf(missatge,"AS130Z");//apagar led 13
 			enviarled(missatge, res, fd);
