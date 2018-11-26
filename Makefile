@@ -1,7 +1,7 @@
 all: compile 
 
 clean:
-	rm captura
+	rm -rf *o main
 github:
 	git clone https://github.com/1421184/ADSRT_2018
 executar:
@@ -14,5 +14,21 @@ help:
 	@echo   make compile
 	@echo	make github
 	@echo   make executar, "paràmetre per defecte 30º"
+exec:
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/alumne/Escriptori/ADSRT_2018 ./mail
 
+compilar: main_mail.o libmail.so
+	gcc -o mail main_mail.o -L/home/alumne/Escriptori/ADSRT_2018 -lmail 
 
+mail1: mail.c
+	gcc  -fPIC -c -o mail.o mail.c
+
+mail2: mail.o
+	gcc -shared -fPIC -o libmail.so mail.o
+
+mail3: main_mail.c
+	gcc -c -o main_mail.o main_mail.c -I/home/alumne/Escriptori/ADSRT_2018
+
+exec_lib: compilar
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/alumne/Escriptori/ADSRT_2018 ./main
+	
