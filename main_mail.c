@@ -22,6 +22,7 @@ sqlite3 *db;
 char *zErrMsg = 0;
 int rc;
 char *valorsql;
+
 static int callback(void *NotUsed, int argc, char **argv, char 
 **azColName){
 int i;
@@ -42,15 +43,25 @@ int sqlite(char *ordre){
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
 	}
-	return 0;
+
+return 0;
 }
+
 int main(int argc, char *argv[]){
 //int mail(char *remitent, char *desti, char *cos_email);
 	char ordre[1000];
 	char cos_email[1000];
 	char hora[255];
 	time_t temps;
-
+rc = sqlite3_open("basedades.db", &db);
+	if( rc ){
+		fprintf(stderr, "No s'ha pogut obrir la base de dades: %s\n", sqlite3_errmsg(db));
+		sqlite3_close(db);
+	}
+	sprintf(ordre,"CREATE TABLE taula ( data DATETIME, temperatura FLOAT, estat INT)");
+	sqlite(ordre);
+	sprintf(ordre,"CREATE TABLE alarmes ( data DATETIME, temps float)");
+	sqlite(ordre);
         //Capturem el temps amb la funcio time(time_t *t);
 	temps = time(NULL);
 	// Defineix punter a una estructura tm
@@ -116,6 +127,6 @@ int main(int argc, char *argv[]){
     strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
 	enviar_mail("1422047@campus.euss.org", "1421184@campus.euss.org", cos_email );
-    
+    sqlite3_close(db);
 	return 0;
 }
