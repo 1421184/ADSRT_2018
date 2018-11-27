@@ -21,9 +21,11 @@
 sqlite3 *db;
 char *zErrMsg = 0;
 int rc;
+char *valorsql;
 static int callback(void *NotUsed, int argc, char **argv, char 
 **azColName){
 int i;
+sprintf(valorsql,"%s",argv[0]);
 	for(i=0; i<argc; i++){
 	
 		printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
@@ -75,47 +77,45 @@ int main(int argc, char *argv[]){
 	sprintf(ordre,"SELECT MIN(data) FROM taula WHERE data >= %s",hora); 
 	sqlite(ordre);
 	memset(cos_email,'\0',1000);
-    strcat(cos_email,ordre);
+    strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
     //Busca i insereix l'última data guardada al sqlite
 	sprintf(ordre,"SELECT MAX(data) FROM taula WHERE data >= %s",hora); 
     sqlite(ordre);
-    strcat(cos_email,ordre);
+    strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
     sprintf(hora,"%.02i/%.02i/%i %.02i:%.02i:%.02i",p_data->tm_mday-1,p_data->tm_mon,1900+p_data->tm_year, p_data->tm_hour, p_data->tm_min, p_data->tm_sec);
     //Busca i insereix la temperatura màxima durant el día actual
     sprintf(ordre,"SELECT MAX(temperatura) FROM taula WHERE data >= %s",hora);
     sqlite(ordre);
-    strcat(cos_email,ordre);
+    strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
 	//Busca i insereix la temperatura mínima durant el día actual
     sprintf(ordre,"SELECT MIN(temperatura) FROM taula WHERE data >= %s",hora);
     sqlite(ordre);
-    strcat(cos_email,ordre);
+    strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
 	//Busca i insereix la temperatura mitjana durant el día actual
     sprintf(ordre,"SELECT AVG(temperatura) FROM taula WHERE data >= %s",hora);
     sqlite(ordre);
-    strcat(cos_email,ordre);
+    strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
     //Busca i insereix el temps de funcionament del ventilador durant el día actual
     sprintf(ordre,"SELECT MAX(temps) FROM alarmes WHERE data >= %s",hora);
     sqlite(ordre);
-    strcat(cos_email,ordre);
+    strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
     //Busca i insereix el temps mitjà de funcionament del ventilador durant el día actual
     sprintf(ordre,"SELECT AVG(temps) FROM alarmes WHERE data >= %s",hora);
     sqlite(ordre);
-    strcat(cos_email,ordre);
+    strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
       //Busca i insereix el temps mitjà de funcionament del ventilador durant el día actual
     sprintf(ordre,"SELECT AVG(temps) FROM alarmes WHERE data >= %s",hora);
     sqlite(ordre);
-    strcat(cos_email,ordre);
+    strcat(cos_email,valorsql);
     strcat(cos_email,"\n");
 	enviar_mail("1422047@campus.euss.org", "1421184@campus.euss.org", cos_email );
     
-
-
 	return 0;
 }
