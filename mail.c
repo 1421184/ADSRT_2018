@@ -27,21 +27,19 @@ int enviar_mail(char *remitent, char *desti, char *cos_email) {
 	int			sockAddrSize;
 	int			sFd;
 	int 		result;
-	char		buffer[256];
+	char		buffer[REQUEST_MSG_SIZE];
 	char		missatge0[] = "HELO AE2004\n";
 	char		missatge1[] = "MAIL FROM: ";
 	char		missatge2[] = "RCPT TO: ";
 	char		missatge3[] = "DATA\n";
 	char		missatge4[] = "QUIT\n";
-	char 		missatge[1024];
-        //Definim una variable de tipus time_t
-	time_t temps;
-        //Capturem el temps amb la funcio time(time_t *t);
-	temps = time(NULL);
+	char 		missatge[REQUEST_MSG_SIZE];
+
+
         //El valor de retorn es a una variable de tipus timei_t, on posaràl temps en segons des de 1970-01-01 00:00:00 +0000 (UTC)
 	
 	// Defineix punter a una estructura tm
-    struct tm *p_data;
+
 	//Funcion localtime() per traduir segons UTC a la hora:minuts:segons de la hora local
 	//struct tm *localtime(const time_t *timep);
         //Es treu per pantalla el camp tm_sec de l'estructura temps, que són els segons de la hora actual
@@ -64,8 +62,8 @@ int enviar_mail(char *remitent, char *desti, char *cos_email) {
 	printf("\nConnexió establerta amb el servidor: adreça %s, port %d\n",	inet_ntoa(serverAddr.sin_addr), ntohs(serverAddr.sin_port));
 	
 	/*Rebre*/
-	memset(buffer, 0, 256);
-	result = read(sFd, buffer, 256);
+	memset(buffer, 0, REQUEST_MSG_SIZE);
+	result = read(sFd, buffer, REQUEST_MSG_SIZE);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
 
@@ -75,8 +73,8 @@ int enviar_mail(char *remitent, char *desti, char *cos_email) {
 	printf("Missatge enviat a servidor(bytes %d): %s\n",	result, buffer);
 	
 	/*Rebre*/
-	memset(buffer, 0, 256);
-	result = read(sFd, buffer, 256);
+	memset(buffer, 0, REQUEST_MSG_SIZE);
+	result = read(sFd, buffer, REQUEST_MSG_SIZE);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
 	
@@ -89,8 +87,8 @@ int enviar_mail(char *remitent, char *desti, char *cos_email) {
 	printf("Missatge enviat a servidor(bytes %d): %s\n",	result, buffer);
 	
 	/*Rebre*/
-	memset(buffer, 0, 256);
-	result = read(sFd, buffer, 256);
+	memset(buffer, 0, REQUEST_MSG_SIZE);
+	result = read(sFd, buffer, REQUEST_MSG_SIZE);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
 	
@@ -102,8 +100,8 @@ int enviar_mail(char *remitent, char *desti, char *cos_email) {
 	printf("Missatge enviat a servidor(bytes %d): %s\n",	result, buffer);
 	
 	/*Rebre*/
-	memset(buffer, 0, 256);
-	result = read(sFd, buffer, 256);
+	memset(buffer, 0, REQUEST_MSG_SIZE);
+	result = read(sFd, buffer, REQUEST_MSG_SIZE);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
 	
@@ -113,19 +111,15 @@ int enviar_mail(char *remitent, char *desti, char *cos_email) {
 	printf("Missatge enviat a servidor(bytes %d): %s\n",	result, buffer);
 	
 	/*Rebre*/
-	memset(buffer, 0, 256);
-	result = read(sFd, buffer, 256);
+	memset(buffer, 0, REQUEST_MSG_SIZE);
+	result = read(sFd, buffer, REQUEST_MSG_SIZE);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
 	
 	
 	// -- Contruir el cos email
-	p_data = localtime( &temps );
-    //Es treu per pantalla el camp tm_sec de l'estructura temps, que són els segons de la hora actual
-        
-    sprintf(missatge,"\n\nL'hora actual és: %i:%.02i:%.02i\n\nAdéu", p_data->tm_hour, p_data->tm_min, p_data->tm_sec);
-	//printf("%s",missatge);
-	
+
+          	
 	/*Enviar*/
 	strcpy(buffer,cos_email);
 	strcat(buffer,missatge);
@@ -134,17 +128,19 @@ int enviar_mail(char *remitent, char *desti, char *cos_email) {
 	printf("Missatge enviat a servidor(bytes %d): %s\n",	result, buffer);
 	
 	/*Rebre*/
-	memset(buffer, 0, 256);
-	result = read(sFd, buffer, 256);
+	memset(buffer, 0, REQUEST_MSG_SIZE);
+	result = read(sFd, buffer, REQUEST_MSG_SIZE);
 	buffer[result]=0;
 	printf("Missatge rebut del servidor(bytes %d): %s\n",	result, buffer);
 
 	/*Enviar*/
+	memset(buffer, 0, REQUEST_MSG_SIZE);
 	strcpy(buffer,missatge4); //Copiar missatge a buffer
 	result = write(sFd, buffer, strlen(buffer));
 	printf("Missatge enviat a servidor(bytes %d): %s\n",	result, buffer);
 
 	
 	close(sFd);
+	return 0;
 }
 

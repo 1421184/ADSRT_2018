@@ -300,6 +300,7 @@ if (strncmp(buf,"AM0Z",4)==0)
 		{
 			//S'envien i es reben els diferetns missatges amb l'arduino
 			sprintf(ordre,"INSERT INTO taula VALUES ('%s', %f, %i)",hora,graus,up);
+			printf("%s",ordre);
 			sqlite(ordre);
 			sprintf(missatge,"AS131Z");//encdre led13
 			enviarled(missatge,res,fd);
@@ -342,7 +343,7 @@ if (strncmp(buf,"AM0Z",4)==0)
 	alarma = 0;
 	memset(cos_email,'\0',256);
 	sprintf(cos_email,"Subject: Alarma\nFrom: %s\nTo: %s\n\nNo és possible controlar la temperatura\n\n",remitent,desti);
-	enviar_mail(remitent,desti,cos_email);
+
 	}
 	if (up==0){
 		if (graus >= temperatura)
