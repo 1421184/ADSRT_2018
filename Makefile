@@ -16,7 +16,7 @@ help:
 	@echo   make executar, "paràmetre per defecte 30º"
 
 compilar: mail2 mail3
-	gcc -o mail main_mail.o -lsqlite3 -L/home/alumne/Escriptori/ADSRT_2018 -lmail 
+	gcc -o informe main_mail.o -lsqlite3 -L/home/alumne/Escriptori/ADSRT_2018 -lmail 
 
 mail1: mail.c
 	gcc  -fPIC -c -o mail.o mail.c
@@ -24,9 +24,9 @@ mail1: mail.c
 mail2: mail1
 	gcc -shared -fPIC -o libmail.so mail.o
 
-mail3: main_mail.c
-	gcc -c -o main_mail.o -lsqlite3 main_mail.c -I/home/alumne/Escriptori/ADSRT_2018
+mail3: informe.c
+	gcc -c -o main_mail.o -lsqlite3 informe.c -I/home/alumne/Escriptori/ADSRT_2018
 funcionar: 
-	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/alumne/Escriptori/ADSRT_2018 ./mail -b basedades.db -r 1422047@campus.euss.org -d 1421184@campus.euss.org
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/alumne/Escriptori/ADSRT_2018 ./informe -b basedades.db -r 1422047@campus.euss.org -d 1421184@campus.euss.org
 
 	
