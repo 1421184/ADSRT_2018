@@ -16,6 +16,7 @@
 #include <time.h> 
 #include <getopt.h> 
 #include <sqlite3.h> 
+#include <signal.h>
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -32,8 +33,10 @@ struct termios oldtio,newtio;
 sqlite3 *db;
 char *zErrMsg = 0;
 int rc;
+int comp=0;
 //configuració de la comunicació sèrie
-static int callback(void *NotUsed, int argc, char **argv, char 
+
+static int call(void *NotUsed, int argc, char **argv, char 
 **azColName){
 int i;
 	for(i=0; i<argc; i++){
@@ -48,7 +51,7 @@ return 0;
 
 int sqlite(char *ordre){
 
-	rc = sqlite3_exec(db, ordre, callback, 0, &zErrMsg);
+	rc = sqlite3_exec(db, ordre, call, 0, &zErrMsg);
 
 	if( rc!=SQLITE_OK ){
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -56,6 +59,12 @@ int sqlite(char *ordre){
 	}
 
 return 0;
+}
+
+void callback(union sigval si)
+{
+    comp++;
+    printf("%s:%d\n","PROVA", comp);
 }
 
 int	ConfigurarSerie(void)
@@ -178,6 +187,28 @@ void TancarSerie(int fd)
 	tcsetattr(fd,TCSANOW,&oldtio);
 	close(fd);
 }
+typedef void (timer_callback) (union sigval);
+int set_timer(timer_t * timer_id, float delay, float interval, timer_callback * func, void * data) 
+{
+
+    struct itimerspec ts;
+    struct sigevent se;
+
+    se.sigev_notify = SIGEV_THREAD;
+    se.sigev_value.sival_ptr = data;
+    se.sigev_notify_function = func;
+    se.sigev_notify_attributes = NULL;
+
+  timer_create(CLOCK_REALTIME, &se, timer_id);
+
+    ts.it_value.tv_sec = abs(delay);
+    ts.it_value.tv_nsec = (delay-abs(delay)) * 1e09;
+    ts.it_interval.tv_sec = abs(interval);
+    ts.it_interval.tv_nsec = (interval-abs(interval)) * 1e09;
+
+    timer_settime(*timer_id, 0, &ts, 0);
+    return 0;
+}
 
 int main(int argc, char *argv[]) {                                                              
    
@@ -185,7 +216,6 @@ int main(int argc, char *argv[]) {
 	int i=0, fd, res=0,m=1, lectures=0, pos=0, excestemp=0, up=0;                                                     
 	float array[3600];
 	float graus=0, maxim=0, minim=99;
-	int comp=0;
 	char buf[255];
 	char missatge[255];
 	char ordre[100];
@@ -199,7 +229,9 @@ int main(int argc, char *argv[]) {
     int temperatura = -1;
     int alarma=0;
 	memset(buf,'\0',256);
-	fd = ConfigurarSerie();	
+	fd = ConfigurarSerie();
+	timer_t tick;
+    set_timer(&tick, 1, 1, callback, (void *) "tick" );	
 	time_t temps;
 
         //Capturem el temps amb la funcio time(time_t *t);
@@ -321,6 +353,7 @@ if (strncmp(buf,"AM0Z",4)==0)
 			printf("%i\n",lectures);
 			pos++; //posició de l'array circular
 		}
+	
 			//si la posició de l'array circular arriba a 3600, es torna a 0
 			if (pos==3600)
 			{
@@ -381,9 +414,9 @@ if (strncmp(buf,"AM0Z",4)==0)
 				printf("El mínim és %f\n",minim);
 			}
 
-			sleep(1);
-			comp++; //s'incrementa la varibale comp cada segon(sleeep(1))->comptador
-			
+
+			 //s'incrementa la varibale comp cada segon(sleeep(1))->comptador
+sleep(1);
 	} while (m==1);
 	
 }		 
