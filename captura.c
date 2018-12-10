@@ -64,7 +64,6 @@ return 0;
 void callback(union sigval si)
 {
     comp++;
-    printf("%s:%d\n","PROVA", comp);
 }
 
 int	ConfigurarSerie(void)
@@ -228,6 +227,7 @@ int main(int argc, char *argv[]) {
 	int opt= 0;
     int temperatura = -1;
     int alarma=0;
+    int temps_funcionament=0;
 	memset(buf,'\0',256);
 	fd = ConfigurarSerie();
 	timer_t tick;
@@ -332,6 +332,7 @@ if (strncmp(buf,"AM0Z",4)==0)
 		{
 			//S'envien i es reben els diferetns missatges amb l'arduino
 			sprintf(ordre,"INSERT INTO taula VALUES ('%s', %f, %i)",hora,graus,up);
+			if (up==1){	up=2;}
 			printf("%s",ordre);
 			sqlite(ordre);
 			sprintf(missatge,"AS131Z");//encdre led13
@@ -353,7 +354,6 @@ if (strncmp(buf,"AM0Z",4)==0)
 			printf("%i\n",lectures);
 			pos++; //posició de l'array circular
 		}
-	
 			//si la posició de l'array circular arriba a 3600, es torna a 0
 			if (pos==3600)
 			{
@@ -362,7 +362,6 @@ if (strncmp(buf,"AM0Z",4)==0)
 			}
 			array[pos]=graus; //es guarda la temperatura a l'arrray circular 3600
 		
-	
 			
 		//Comprovació per encendre o apagar el ventilador
 	
@@ -371,7 +370,8 @@ if (strncmp(buf,"AM0Z",4)==0)
 		alarma=comparacio+300;
 	}
 	if (alarma==comp){
-	sprintf(ordre,"INSERT INTO alarmes VALUES ('%s', %i)",hora,comp);
+	temps_funcionament +=  5;
+	sprintf(ordre,"INSERT INTO alarmes VALUES ('%s', %i)",hora,temps_funcionament);
 	sqlite(ordre);
 	alarma = 0;
 	memset(cos_email,'\0',256);
@@ -400,6 +400,8 @@ if (strncmp(buf,"AM0Z",4)==0)
 			memset(buf,'\0',256);
 			excestemp=0;
 			up=0;
+			alarma = 0;
+			temps_funcionament = 0;
 		}
 
 		//comparem les adqusicions per guardar els màxims i mínims de temperatura
@@ -414,9 +416,8 @@ if (strncmp(buf,"AM0Z",4)==0)
 				printf("El mínim és %f\n",minim);
 			}
 
-
-			 //s'incrementa la varibale comp cada segon(sleeep(1))->comptador
-sleep(1);
+		sleep(1);
+		
 	} while (m==1);
 	
 }		 
