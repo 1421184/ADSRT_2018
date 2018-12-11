@@ -178,7 +178,7 @@ int main(int argc, char *argv[]){
     sprintf(ordre,"SELECT MAX(id) FROM alarmes WHERE data<'%s' AND data>'%s';", dia_seguent, dia_anterior);
     sqlite(ordre);
     strcat(cos_email,"- El ventilador ha funcionat: ");
-    strcat(cos_email, valorsql);
+    strcat(cos_email, valorsql );
     strcat(cos_email," vegades\n\n");
     //Incorpora el llistat d'alarmes
     sprintf(ordre,"SELECT data,temps FROM alarmes;");
