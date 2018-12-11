@@ -364,14 +364,14 @@ if (strncmp(buf,"AM0Z",4)==0)
 			
 		//Comprovació per encendre o apagar el ventilador
 	
-	if (alarma==0 && up==1)
+	if (alarma==0 && (up==1||up==2))
 	{
-		alarma=comparacio+30;
+		alarma=comp+30;
 	}
 	if (alarma==comp){
 	temps_funcionament +=  30;
 	sprintf(ordre,"INSERT INTO alarmes VALUES ('%s', %i);",hora,temps_funcionament);
-	printf("%s",ordre);
+	printf("%s\n",ordre);
 	sqlite(ordre);
 	alarma = 0;
 	memset(cos_email,'\0',256);

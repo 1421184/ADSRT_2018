@@ -178,7 +178,8 @@ int main(int argc, char *argv[]){
     sprintf(ordre,"SELECT * FROM alarmes");
     sqlite(ordre);
     strcat(cos_email,"- El ventilador ha funcionat: ");
-    sprintf(cos_email,"%i",i);
+    sprintf(ordre,"%i",i+1);
+    strcat(cos_email, ordre);
     strcat(cos_email," vegades\n\n");
     //Incorpora el llistat d'alarmes
     sprintf(ordre,"SELECT * FROM alarmes");
@@ -188,7 +189,7 @@ int main(int argc, char *argv[]){
     strcat(cos_email,"- El llistat d'alarmes és el següent: \n\n");
     strcat(cos_email,cos_alarmes);
     printf("%s\n",cos_email);
-	//enviar_mail(remitent, desti, cos_email);
+	enviar_mail(remitent, desti, cos_email);
     sqlite3_close(db);
 	return 0;
 }
