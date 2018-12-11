@@ -7,7 +7,7 @@ github:
 executar:
 	./captura -t 30 -r 1422047@campus.euss.org -c basedades.db -d 1421184@campus.euss.org
 compile:
-	gcc captura.c -lsqlite3 -lpthread -lrt -o captura
+	gcc captura.c -lsqlite3 -lpthread -lrt -o captura main_mail.o -lsqlite3 -L/home/alumne/Escriptori/ADSRT_2018 -lmail 
 help:
 	@echo Opcions compilacio
 	@echo   make clean
@@ -28,5 +28,3 @@ mail3: informe.c
 	gcc -c -o main_mail.o -lsqlite3 informe.c -I/home/alumne/Escriptori/ADSRT_2018
 funcionar: 
 	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/alumne/Escriptori/ADSRT_2018 ./informe -b basedades.db -r 1422047@campus.euss.org -d 1421184@campus.euss.org
-
-	

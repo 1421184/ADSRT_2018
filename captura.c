@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
 	int comparacio=0;
 	int opt= 0;
     int temperatura = -1;
-    int alarma=0;
+    int alarma=30;
     int temps_funcionament=0;
 	memset(buf,'\0',256);
 	fd = ConfigurarSerie();
@@ -296,7 +296,7 @@ int main(int argc, char *argv[]) {
 	sprintf(ordre,"CREATE TABLE alarmes ( data DATETIME, temps float)");
 	sqlite(ordre);
     if (temperatura == -1) {
-       printf("Si us palu, introdueix el paràmetre -t o -temperatura seguit de la temperatura màxima");
+       printf("Si us palu, introdueix el paràmetre -t,-r,-c,-d per indicar la temperatura màxima, el remitent, el destí i la base de dades\n");
         exit(EXIT_FAILURE);
     }
 
@@ -326,12 +326,11 @@ if (strncmp(buf,"AM0Z",4)==0)
 	{
        sprintf(hora,"%.02i/%.02i/%i %.02i:%.02i:%.02i",p_data->tm_mday,p_data->tm_mon,1900+p_data->tm_year, p_data->tm_hour, p_data->tm_min, p_data->tm_sec);
 		memset(buf,'\0',256);//es neteja el buf per poder llegir els valors correctament
-		
 		//cada vegada que comp sigui igual al temps establert per la consola es farà la comunicació de missatges
 		if (comp==comparacio+10)
 		{
 			//S'envien i es reben els diferetns missatges amb l'arduino
-			sprintf(ordre,"INSERT INTO taula VALUES ('%s', %f, %i)",hora,graus,up);
+			sprintf(ordre,"INSERT INTO taula VALUES ('%s', %f, %i);",hora,graus,up);
 			if (up==1){	up=2;}
 			printf("%s",ordre);
 			sqlite(ordre);
@@ -367,16 +366,17 @@ if (strncmp(buf,"AM0Z",4)==0)
 	
 	if (alarma==0 && up==1)
 	{
-		alarma=comparacio+300;
+		alarma=comparacio+30;
 	}
 	if (alarma==comp){
-	temps_funcionament +=  5;
-	sprintf(ordre,"INSERT INTO alarmes VALUES ('%s', %i)",hora,temps_funcionament);
+	temps_funcionament +=  30;
+	sprintf(ordre,"INSERT INTO alarmes VALUES ('%s', %i);",hora,temps_funcionament);
+	printf("%s",ordre);
 	sqlite(ordre);
 	alarma = 0;
 	memset(cos_email,'\0',256);
 	sprintf(cos_email,"Subject: Alarma\nFrom: %s\nTo: %s\n\nNo és possible controlar la temperatura\n\n",remitent,desti);
-
+	//enviar_mail(remitent, desti, cos_email);
 	}
 	if (up==0){
 		if (graus >= temperatura)

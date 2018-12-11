@@ -7,7 +7,7 @@ github:
 executar:
 	./captura -t 30 -r 1422047@campus.euss.org -c basedades.db -d 1421184@campus.euss.org
 compile:
-	gcc captura.c -lsqlite3 -lpthread -lrt -o captura
+	gcc captura.c -lsqlite3 -lpthread -lrt -o captura 
 help:
 	@echo Opcions compilacio
 	@echo   make clean
