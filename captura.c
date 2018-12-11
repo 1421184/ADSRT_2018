@@ -228,6 +228,7 @@ int main(int argc, char *argv[]) {
     int temperatura = -1;
     int alarma=30;
     int temps_funcionament=0;
+    int id=0;
 	memset(buf,'\0',256);
 	fd = ConfigurarSerie();
 	timer_t tick;
@@ -293,7 +294,7 @@ int main(int argc, char *argv[]) {
 	}
 	sprintf(ordre,"CREATE TABLE taula ( data DATETIME, temperatura FLOAT, estat INT)");
 	sqlite(ordre);
-	sprintf(ordre,"CREATE TABLE alarmes ( data DATETIME, temps float)");
+	sprintf(ordre,"CREATE TABLE alarmes (id INT, data DATETIME, temps float)");
 	sqlite(ordre);
     if (temperatura == -1) {
        printf("Si us palu, introdueix el paràmetre -t,-r,-c,-d per indicar la temperatura màxima, el remitent, el destí i la base de dades\n");
@@ -369,8 +370,9 @@ if (strncmp(buf,"AM0Z",4)==0)
 		alarma=comp+30;
 	}
 	if (alarma==comp){
+	id++;
 	temps_funcionament +=  30;
-	sprintf(ordre,"INSERT INTO alarmes VALUES ('%s', %i);",hora,temps_funcionament);
+	sprintf(ordre,"INSERT INTO alarmes VALUES (%i,'%s', %i);",id,hora,temps_funcionament);
 	printf("%s\n",ordre);
 	sqlite(ordre);
 	alarma = 0;

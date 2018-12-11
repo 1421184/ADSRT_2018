@@ -26,24 +26,24 @@ char valorsql[1000];
 int alarmes=0;
 char cos_alarmes[1000];
 char valor_taula[1000];
-
 int i;
 static int callback(void *NotUsed, int argc, char **argv, char 
 **azColName){
 
 	printf("callback: %s\n", argv[0]);
 	sprintf(valorsql,"%s",argv[0]);
-	
 	for(i=0; i<argc; i++){
 	
 		sprintf(valor_taula,"%s: %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
 		if (alarmes)
-		{
-			strcat(cos_alarmes,valor_taula);
-			printf("%s\n",cos_alarmes);
-
+		{	
+			printf("\n\n\n%i\n\n\n",i);
+		printf("AQUÍ SÍ QUE ESTÁ ENTRANDO");
+		strcat(cos_alarmes,valor_taula);
 		}
 	}
+	
+	printf("%s\n",cos_alarmes);
 return 0;
 }
 int sqlite(char *ordre){
@@ -175,21 +175,20 @@ int main(int argc, char *argv[]){
     strcat(cos_email,valorsql);
     strcat(cos_email," segons\n\n");
     //Busca i insereix el número de vegades que ha funcionat el ventilador durant el día actual
-    sprintf(ordre,"SELECT * FROM alarmes");
+    sprintf(ordre,"SELECT MAX(id) FROM alarmes WHERE data<'%s' AND data>'%s';", dia_seguent, dia_anterior);
     sqlite(ordre);
     strcat(cos_email,"- El ventilador ha funcionat: ");
-    sprintf(ordre,"%i",i+1);
-    strcat(cos_email, ordre);
+    strcat(cos_email, valorsql);
     strcat(cos_email," vegades\n\n");
     //Incorpora el llistat d'alarmes
-    sprintf(ordre,"SELECT * FROM alarmes");
+    sprintf(ordre,"SELECT data,temps FROM alarmes;");
     alarmes=1;
     sqlite(ordre);
     alarmes=0;
     strcat(cos_email,"- El llistat d'alarmes és el següent: \n\n");
     strcat(cos_email,cos_alarmes);
     printf("%s\n",cos_email);
-	enviar_mail(remitent, desti, cos_email);
+	//enviar_mail(remitent, desti, cos_email);
     sqlite3_close(db);
 	return 0;
 }
