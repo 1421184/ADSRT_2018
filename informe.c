@@ -175,7 +175,7 @@ int main(int argc, char *argv[]){
     strcat(cos_email,valorsql);
     strcat(cos_email," segons\n\n");
     //Busca i insereix el número de vegades que ha funcionat el ventilador durant el día actual
-    sprintf(ordre,"SELECT MAX(id) FROM alarmes WHERE data<'%s' AND data>'%s';", dia_seguent, dia_anterior);
+    sprintf(ordre,"SELECT COUNT(*) FROM alarmes WHERE data<'%s' AND data>'%s';", dia_seguent, dia_anterior);
     sqlite(ordre);
     strcat(cos_email,"- El ventilador ha funcionat: ");
     strcat(cos_email, valorsql );
