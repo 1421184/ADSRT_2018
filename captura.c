@@ -352,7 +352,10 @@ if (strncmp(buf, "AM0Z", 4) == 0) {
 		//Comprovació per encendre o apagar el ventilador
 
 	if (alarma == 0 && (up == 1 || up == 2)) {
-		alarma = comp+30; }
+		alarma = comp+30;
+		}
+		
+		
 	if (alarma == comp) {
 		temps_funcionament += 30;
 		sprintf(ordre, "INSERT INTO alarmes VALUES ('%s', %i);",
@@ -362,7 +365,7 @@ if (strncmp(buf, "AM0Z", 4) == 0) {
 		alarma = 0;
 		memset(cos_email, '\0', 256);
 		sprintf(cos_email, "Subject: Alarma\nFrom: %s\nTo:%s\n\nNo és possible controlar la temperatura\n\n", remitent, desti);
-		//enviar_mail(remitent, desti, cos_email);
+		enviar_mail(remitent, desti, cos_email);
 	}
 	if (up == 0) {
 		if (graus >= temperatura) {

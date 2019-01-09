@@ -37,13 +37,10 @@ static int callback(void *NotUsed, int argc, char **argv, char
 		sprintf(valor_taula,"%s: %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
 		if (alarmes)
 		{	
-			printf("\n\n\n%i\n\n\n",i);
-		printf("AQUÍ SÍ QUE ESTÁ ENTRANDO");
 		strcat(cos_alarmes,valor_taula);
 		}
 	}
 	
-	printf("%s\n",cos_alarmes);
 return 0;
 }
 int sqlite(char *ordre){
@@ -188,7 +185,7 @@ int main(int argc, char *argv[]){
     strcat(cos_email,"- El llistat d'alarmes és el següent: \n\n");
     strcat(cos_email,cos_alarmes);
     printf("%s\n",cos_email);
-	//enviar_mail(remitent, desti, cos_email);
+	enviar_mail(remitent, desti, cos_email);
     sqlite3_close(db);
 	return 0;
 }
