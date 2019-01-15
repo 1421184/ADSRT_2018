@@ -30,8 +30,8 @@ static int callback(void *NotUsed, int argc, char **argv, char
 **azColName)
 {
 
-	printf("callback: %s\n", argv[0]);
-	sprintf(valorsql, "%s", argv[0]);
+	printf("callback: %s\n", argv[0]?argv[0]:"(((NULL)))");
+	sprintf(valorsql, "%s", argv[0]?argv[0]:"(((NULL)))");
 	for (i = 0; i < argc; i++) {
 
 		sprintf(valor_taula, "%s: %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
